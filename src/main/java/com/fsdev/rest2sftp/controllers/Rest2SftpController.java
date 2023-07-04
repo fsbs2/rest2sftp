@@ -21,7 +21,9 @@ public class Rest2SftpController implements V1Api {
 
     @Override
     public ResponseEntity<DocumentResponse> downloadFIle(String directory, String fileName) {
-        return null;
+        var documentResponse = new DocumentResponse();
+        documentResponse = rest2SftpService.downloadDocument(directory,fileName);
+        return new ResponseEntity<>(documentResponse,HttpStatus.OK);
     }
 
     @Override

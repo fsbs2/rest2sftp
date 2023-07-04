@@ -1,11 +1,13 @@
 package com.fsdev.rest2sftp.services;
 
 import com.fsdev.swagger.models.DocumentRequest;
+import com.fsdev.swagger.models.DocumentResponse;
 import com.jcraft.jsch.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 @Service
@@ -31,7 +33,26 @@ public class Rest2SftpService {
         this.jSch = jSch;
     }
 
-    public void uploadService(DocumentRequest body)  {
+    public DocumentResponse downloadDocument(String directory, String fileName) {
+        try {
+            DocumentResponse documentResponse = new DocumentResponse();
+            this.channelSftp = connectSftpServer();
+            channelSftp.connect();
+            String view = channelSftp.pwd();
+            channelSftp.cd(directory);
+            documentResponse.setDocument(channelSftp.get(fileName).readAllBytes());
+            disconnectSftpServer();
+            return documentResponse;
+        } catch (JSchException e) {
+            throw new RuntimeException(e);
+        } catch (SftpException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void uploadService(DocumentRequest body) {
         try {
             this.channelSftp = connectSftpServer();
             channelSftp.connect();
@@ -48,7 +69,7 @@ public class Rest2SftpService {
 
 
     private ChannelSftp connectSftpServer() throws JSchException {
-        this.jschSession = this.jSch.getSession(username,remoteHost);
+        this.jschSession = this.jSch.getSession(username, remoteHost);
         jschSession.setPassword(password);
         var config = new java.util.Properties();
         config.put("StrictHostKeyChecking", "no");
@@ -57,11 +78,11 @@ public class Rest2SftpService {
         return (ChannelSftp) jschSession.openChannel(CHANNEL_TYPE);
     }
 
-    private void disconnectSftpServer(){
-        if(channelSftp.isConnected()){
+    private void disconnectSftpServer() {
+        if (channelSftp.isConnected()) {
             channelSftp.disconnect();
         }
-        if(jschSession.isConnected()){
+        if (jschSession.isConnected()) {
             jschSession.disconnect();
         }
     }
