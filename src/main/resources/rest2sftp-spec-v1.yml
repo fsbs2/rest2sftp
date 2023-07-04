@@ -1,0 +1,257 @@
+openapi: 3.0.3
+info:
+  title: REST API connecting a FTP Server
+  description: Rest services connecting a SFTP server uploading and downloading binary documents
+  version: 0.0.1
+servers:
+  - url: https://fsdev.com/rest-sftp
+tags:
+  - name: REST
+    description: Rest services
+paths:
+  /v1/documents:
+    get:
+      tags:
+        - REST
+      summary: Lista todos diretorios
+      operationId: listarServer
+      responses:
+        200:
+          description: Consulta com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FolderFileList'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+        - basicAuth: []
+    post:
+      tags:
+        - REST
+      summary: Upload documento
+      operationId: uploadFile
+      requestBody:
+        description: Upload de documento
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentRequest'
+        required: true
+      responses:
+        204:
+          description: Upload Successful
+          content: {}
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+        - basicAuth: []
+      x-codegen-request-body-name: uploadDocument
+  /v1/documents/{directory}:
+    get:
+      tags:
+        - REST
+      summary: Lista arquivos no diretório
+      operationId: ListarDirectory
+      parameters:
+        - name: directory
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Consulta com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FolderFileList'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+        - basicAuth: []
+  /v1/documents/{directory}/{fileName}:
+    get:
+      tags:
+        - REST
+      summary: Download do documento
+      operationId: downloadFIle
+      parameters:
+        - name: directory
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: fileName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Consulta com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+        - basicAuth: []
+components:
+  schemas:
+    DocumentRequest:
+      type: object
+      properties:
+        directory:
+          type: string
+          example: /doc
+        fileName:
+          type: string
+          example: file name
+        document:
+          type: string
+          format: byte
+          example: base 64 encoded
+    FolderFileList:
+      type: string
+      example: file name
+    DocumentResponse:
+      type: object
+      properties:
+        document:
+          type: string
+          format: byte
+          example: base 64 encoded
+    Erro:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 20
+        correlationId:
+          type: string
+          example: 11b31a66-76d1-3a20-9dac-6db59996d5b3
+        message:
+          type: string
+          example: erro de validacao
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
