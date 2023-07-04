@@ -4,11 +4,15 @@ import com.fsdev.swagger.models.DocumentRequest;
 import com.fsdev.swagger.models.DocumentResponse;
 import com.jcraft.jsch.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 
 @Service
 public class Rest2SftpService {
@@ -31,6 +35,35 @@ public class Rest2SftpService {
 
     public Rest2SftpService(JSch jSch) {
         this.jSch = jSch;
+    }
+
+    public List<String> listDirectory(String directory) {
+        try {
+            this.channelSftp = connectSftpServer();
+            channelSftp.connect();
+            List<String> response = new ArrayList<>();
+            Vector fileList = channelSftp.ls(directory);
+            for(int i = 0; i< fileList.size();i++) {
+                response.add(fileList.get(i).toString());
+            }
+            disconnectSftpServer();
+            return response;
+        } catch (JSchException | SftpException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+    public List<String> listServer(){
+        try {
+            this.channelSftp = connectSftpServer();
+            channelSftp.connect();
+            Vector ls = channelSftp.ls("/");
+            return ls.stream().toList();
+        } catch (JSchException e) {
+            throw new RuntimeException(e);
+        } catch (SftpException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public DocumentResponse downloadDocument(String directory, String fileName) {
@@ -86,5 +119,4 @@ public class Rest2SftpService {
             jschSession.disconnect();
         }
     }
-
 }
