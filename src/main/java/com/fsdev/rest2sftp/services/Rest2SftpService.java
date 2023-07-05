@@ -17,6 +17,7 @@ import java.util.Vector;
 @Service
 public class Rest2SftpService {
     private final String CHANNEL_TYPE = "sftp";
+    private final String ROOT = "*";
 
     @Value("${sftp.user}")
     private String username;
@@ -53,15 +54,18 @@ public class Rest2SftpService {
         }
 
     }
-    public List<String> listServer(){
+    public List<String> listRootDirectory(){
         try {
             this.channelSftp = connectSftpServer();
             channelSftp.connect();
-            Vector ls = channelSftp.ls("/");
-            return ls.stream().toList();
-        } catch (JSchException e) {
-            throw new RuntimeException(e);
-        } catch (SftpException e) {
+            List<String> response = new ArrayList<>();
+            Vector fileList = channelSftp.ls(ROOT);
+            for(int i = 0; i< fileList.size();i++) {
+                response.add(fileList.get(i).toString());
+            }
+            disconnectSftpServer();
+            return response;
+        } catch (JSchException | SftpException e) {
             throw new RuntimeException(e);
         }
     }
@@ -71,7 +75,6 @@ public class Rest2SftpService {
             DocumentResponse documentResponse = new DocumentResponse();
             this.channelSftp = connectSftpServer();
             channelSftp.connect();
-            String view = channelSftp.pwd();
             channelSftp.cd(directory);
             documentResponse.setDocument(channelSftp.get(fileName).readAllBytes());
             disconnectSftpServer();

@@ -34,7 +34,8 @@ public class Rest2SftpController implements V1Api {
 
     @Override
     public ResponseEntity<List<String>> listarServer() {
-        return null;
+        List<String> response = rest2SftpService.listRootDirectory();
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
     @Override
