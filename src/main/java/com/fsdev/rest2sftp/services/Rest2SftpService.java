@@ -39,35 +39,10 @@ public class Rest2SftpService {
     }
 
     public List<String> listDirectory(String directory) {
-        try {
-            this.channelSftp = connectSftpServer();
-            channelSftp.connect();
-            List<String> response = new ArrayList<>();
-            Vector fileList = channelSftp.ls(directory);
-            for(int i = 0; i< fileList.size();i++) {
-                response.add(fileList.get(i).toString());
-            }
-            disconnectSftpServer();
-            return response;
-        } catch (JSchException | SftpException e) {
-            throw new RuntimeException(e);
-        }
-
+        return listServices(directory);
     }
     public List<String> listRootDirectory(){
-        try {
-            this.channelSftp = connectSftpServer();
-            channelSftp.connect();
-            List<String> response = new ArrayList<>();
-            Vector fileList = channelSftp.ls(ROOT);
-            for(int i = 0; i< fileList.size();i++) {
-                response.add(fileList.get(i).toString());
-            }
-            disconnectSftpServer();
-            return response;
-        } catch (JSchException | SftpException e) {
-            throw new RuntimeException(e);
-        }
+        return listServices(ROOT);
     }
 
     public DocumentResponse downloadDocument(String directory, String fileName) {
@@ -103,12 +78,28 @@ public class Rest2SftpService {
         }
     }
 
+    public List<String> listServices(String directory){
+        try {
+            this.channelSftp = connectSftpServer();
+            channelSftp.connect();
+            List<String> response = new ArrayList<>();
+            Vector fileList = channelSftp.ls(directory);
+            for(int i = 0; i< fileList.size();i++) {
+                response.add(fileList.get(i).toString());
+            }
+            disconnectSftpServer();
+            return response;
+        } catch (JSchException | SftpException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private ChannelSftp connectSftpServer() throws JSchException {
         this.jschSession = this.jSch.getSession(username, remoteHost);
         jschSession.setPassword(password);
         var config = new java.util.Properties();
         config.put("StrictHostKeyChecking", "no");
+        config.put("PreferredAuthentications", "password");
         jschSession.setConfig(config);
         jschSession.connect();
         return (ChannelSftp) jschSession.openChannel(CHANNEL_TYPE);
